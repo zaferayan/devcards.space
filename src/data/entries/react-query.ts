@@ -8,7 +8,7 @@ export const reactQuery: Infographic = {
   tags: ["React", "Frontend"],
   publishedAt: "2025-08-15",
   updatedAt: "2026-04-29",
-  readingMinutes: 13,
+  readingMinutes: 15,
   translations: {
     tr: {
       slug: "react-query-nedir",
@@ -155,6 +155,88 @@ export function CreateUser() {
     </button>
   );
 }`,
+            },
+          },
+          {
+            title: "Custom useQuery Hook'u",
+            body: "İlk refactor genelde useQuery kodunu componentten çıkarıp küçük bir hook'a taşımaktır. Böylece component sadece UI ile ilgilenir; veri çekme, cache anahtarı ve tazelik ayarı tek yerde kalır.",
+            code: {
+              language: "tsx",
+              filename: "hooks/useUsers.ts",
+              code: `import { useQuery } from "@tanstack/react-query";
+
+type User = {
+  id: number;
+  name: string;
+  email: string;
+};
+
+async function fetchUsers(): Promise<User[]> {
+  const res = await fetch("/api/users");
+
+  if (!res.ok) {
+    throw new Error("Kullanıcılar alınamadı");
+  }
+
+  return res.json() as Promise<User[]>;
+}
+
+export function useUsers() {
+  return useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+    staleTime: 1000 * 60,
+  });
+}
+
+// Component içinde
+const { data: users = [], isPending, isError } = useUsers();`,
+            },
+          },
+          {
+            title: "Custom useMutation Hook'u",
+            body: "Mutation tarafında da aynı yaklaşım geçerlidir. createUser fonksiyonunu ve cache invalidation mantığını useCreateUser içine taşırsanız form componentleri daha sade ve tekrar kullanılabilir olur.",
+            code: {
+              language: "tsx",
+              filename: "hooks/useCreateUser.ts",
+              code: `import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+type User = {
+  id: number;
+  name: string;
+  email: string;
+};
+
+type CreateUserInput = Pick<User, "name" | "email">;
+
+async function createUser(input: CreateUserInput): Promise<User> {
+  const res = await fetch("/api/users", {
+    method: "POST",
+    body: JSON.stringify(input),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!res.ok) {
+    throw new Error("Kullanıcı oluşturulamadı");
+  }
+
+  return res.json() as Promise<User>;
+}
+
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateUserInput) => createUser(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+}
+
+// Component içinde
+const createUserMutation = useCreateUser();
+createUserMutation.mutate({ name: "Ada", email: "ada@example.com" });`,
             },
           },
           {
@@ -577,6 +659,88 @@ export function CreateUser() {
     </button>
   );
 }`,
+            },
+          },
+          {
+            title: "Custom useQuery Hook",
+            body: "The first refactor is usually moving useQuery out of the component and into a small hook. The component can then focus on UI while data fetching, cache identity and freshness settings live in one place.",
+            code: {
+              language: "tsx",
+              filename: "hooks/useUsers.ts",
+              code: `import { useQuery } from "@tanstack/react-query";
+
+type User = {
+  id: number;
+  name: string;
+  email: string;
+};
+
+async function fetchUsers(): Promise<User[]> {
+  const res = await fetch("/api/users");
+
+  if (!res.ok) {
+    throw new Error("Could not fetch users");
+  }
+
+  return res.json() as Promise<User[]>;
+}
+
+export function useUsers() {
+  return useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+    staleTime: 1000 * 60,
+  });
+}
+
+// Inside a component
+const { data: users = [], isPending, isError } = useUsers();`,
+            },
+          },
+          {
+            title: "Custom useMutation Hook",
+            body: "The same pattern applies to mutations. Move createUser and cache invalidation into useCreateUser, and your form components become smaller and easier to reuse.",
+            code: {
+              language: "tsx",
+              filename: "hooks/useCreateUser.ts",
+              code: `import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+type User = {
+  id: number;
+  name: string;
+  email: string;
+};
+
+type CreateUserInput = Pick<User, "name" | "email">;
+
+async function createUser(input: CreateUserInput): Promise<User> {
+  const res = await fetch("/api/users", {
+    method: "POST",
+    body: JSON.stringify(input),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!res.ok) {
+    throw new Error("Could not create user");
+  }
+
+  return res.json() as Promise<User>;
+}
+
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateUserInput) => createUser(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+}
+
+// Inside a component
+const createUserMutation = useCreateUser();
+createUserMutation.mutate({ name: "Ada", email: "ada@example.com" });`,
             },
           },
           {
