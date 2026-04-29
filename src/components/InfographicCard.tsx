@@ -19,6 +19,7 @@ const cardLogos: Record<
     label: string;
     theme: string;
     imageClassName?: string;
+    keepLightInDark?: boolean;
   }
 > = {
   "react-query": {
@@ -60,9 +61,11 @@ const cardLogos: Record<
     imageClassName: "max-h-20 max-w-32",
   },
   axios: {
-    src: "/svgl/javascript.svg",
-    label: "JavaScript",
-    theme: "from-[#fef9c3] via-white to-[#f8fafc]",
+    src: "/svgl/axios.svg",
+    label: "Axios",
+    theme: "from-[#f5f3ff] via-white to-[#f8fafc]",
+    imageClassName: "max-h-16 max-w-44",
+    keepLightInDark: true,
   },
   daisyui: {
     src: "/svgl/daisyui.svg",
@@ -105,7 +108,12 @@ export function InfographicCard({ infographic, locale, dict, priority = false }:
           cardLogo?.theme ?? "from-ink-50 via-white to-accent-soft/40"
         }`}
       >
-        <div aria-hidden className="absolute inset-0 hidden bg-ink-900/80 dark:block" />
+        <div
+          aria-hidden
+          className={`absolute inset-0 hidden bg-ink-900/80 dark:block ${
+            cardLogo?.keepLightInDark ? "dark:hidden" : ""
+          }`}
+        />
         <Image
           src={cardLogo?.src ?? infographic.image}
           alt={cardLogo ? `${cardLogo.label} logo` : t.imageAlt}
