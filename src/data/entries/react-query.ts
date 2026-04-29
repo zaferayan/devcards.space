@@ -7,8 +7,8 @@ export const reactQuery: Infographic = {
   imageHeight: 1024,
   tags: ["React", "Frontend"],
   publishedAt: "2025-08-15",
-  updatedAt: "2026-04-28",
-  readingMinutes: 9,
+  updatedAt: "2026-04-29",
+  readingMinutes: 13,
   translations: {
     tr: {
       slug: "react-query-nedir",
@@ -123,18 +123,34 @@ export function Users() {
               filename: "components/CreateUser.tsx",
               code: `import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+type CreateUserInput = {
+  name: string;
+  email: string;
+};
+
+async function createUser(input: CreateUserInput) {
+  const res = await fetch("/api/users", {
+    method: "POST",
+    body: JSON.stringify(input),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!res.ok) throw new Error("Kullanıcı oluşturulamadı");
+  return res.json();
+}
+
 export function CreateUser() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: createUser,
+    mutationFn: (input: CreateUserInput) => createUser(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 
   return (
-    <button onClick={() => mutation.mutate({ name: "Ada" })}>
+    <button onClick={() => mutation.mutate({ name: "Ada", email: "ada@example.com" })}>
       Kullanıcı ekle
     </button>
   );
@@ -142,21 +158,232 @@ export function CreateUser() {
             },
           },
           {
-            title: "Yeniden Kullanılabilir Custom Hook",
-            body: "Aynı sorguyu birden fazla bileşende kullanmak için kendi hook'unuza sarmalamak iyi bir pratiktir. Bu hem cache anahtarının tutarlı kalmasını hem de business logic'in tek yerde toplanmasını sağlar.",
+            title: "TypeScript için Query Key Factory",
+            body: "Custom hook yazarken ilk adım query key'leri tek yerden üretmektir. Böylece liste, detay ve filtreli sorgular aynı isimlendirme standardını kullanır; invalidation ve optimistic update kodları da tip-güvenli kalır.",
             code: {
               language: "tsx",
-              filename: "hooks/useUsers.ts",
-              code: `export function useUsers() {
-  return useQuery({
-    queryKey: ["users"],
-    queryFn: fetchUsers,
-    staleTime: 1000 * 60,
+              filename: "features/users/queryKeys.ts",
+              code: `export const userKeys = {
+  all: ["users"] as const,
+  lists: () => [...userKeys.all, "list"] as const,
+  list: (filters: UserFilters) => [...userKeys.lists(), filters] as const,
+  details: () => [...userKeys.all, "detail"] as const,
+  detail: (id: number) => [...userKeys.details(), id] as const,
+};
+
+export type UserFilters = {
+  search?: string;
+  role?: "admin" | "editor" | "viewer";
+};`,
+            },
+          },
+          {
+            title: "Tipli API Katmanı",
+            body: "Hook'ları temiz tutmak için fetch kodlarını küçük ve tipli API fonksiyonlarına ayırın. React Query bu fonksiyonların Promise dönüş tipini okuyarak data tipini otomatik çıkarır.",
+            code: {
+              language: "tsx",
+              filename: "features/users/api.ts",
+              code: `import type { UserFilters } from "./queryKeys";
+
+export type User = {
+  id: number;
+  name: string;
+  email: string;
+  role: "admin" | "editor" | "viewer";
+};
+
+export type CreateUserInput = Pick<User, "name" | "email" | "role">;
+export type UpdateUserInput = Partial<CreateUserInput>;
+
+async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, init);
+
+  if (!res.ok) {
+    throw new Error("Request failed");
+  }
+
+  return res.json() as Promise<T>;
+}
+
+export function getUsers(filters: UserFilters = {}) {
+  const search = new URLSearchParams();
+  if (filters.search) search.set("search", filters.search);
+  if (filters.role) search.set("role", filters.role);
+
+  return request<User[]>(\`/api/users?\${search.toString()}\`);
+}
+
+export function getUser(id: number) {
+  return request<User>(\`/api/users/\${id}\`);
+}
+
+export function createUser(input: CreateUserInput) {
+  return request<User>("/api/users", {
+    method: "POST",
+    body: JSON.stringify(input),
+    headers: { "Content-Type": "application/json" },
   });
 }
 
-// Kullanımı
-const { data, isLoading } = useUsers();`,
+export function updateUser(id: number, input: UpdateUserInput) {
+  return request<User>(\`/api/users/\${id}\`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+    headers: { "Content-Type": "application/json" },
+  });
+}`,
+            },
+          },
+          {
+            title: "Liste Hook'u: useUsers",
+            body: "Filtre alan bir liste hook'u hem query key'i hem query function'ı tek yerde toplar. keepPreviousData ile filtre değişirken eski listeyi ekranda tutabilir, staleTime ile gereksiz istekleri azaltabilirsiniz.",
+            code: {
+              language: "tsx",
+              filename: "features/users/hooks.ts",
+              code: `import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { getUsers, type UserFilters } from "./api";
+import { userKeys } from "./queryKeys";
+
+export function useUsers(filters: UserFilters = {}) {
+  return useQuery({
+    queryKey: userKeys.list(filters),
+    queryFn: () => getUsers(filters),
+    placeholderData: keepPreviousData,
+    staleTime: 1000 * 60,
+  });
+}`,
+            },
+          },
+          {
+            title: "Detay Hook'u: useUser",
+            body: "Detay sayfalarında id gelmeden sorguyu çalıştırmamak için enabled kullanın. initialData ile listede zaten bulunan kullanıcıyı detay cache'ine başlangıç verisi olarak taşıyabilirsiniz.",
+            code: {
+              language: "tsx",
+              filename: "features/users/hooks.ts",
+              code: `import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getUser, type User } from "./api";
+import { userKeys } from "./queryKeys";
+
+export function useUser(id?: number) {
+  const queryClient = useQueryClient();
+
+  return useQuery({
+    queryKey: id ? userKeys.detail(id) : userKeys.details(),
+    queryFn: () => getUser(id as number),
+    enabled: typeof id === "number",
+    initialData: () => {
+      const users = queryClient.getQueriesData<User[]>({
+        queryKey: userKeys.lists(),
+      });
+
+      return users
+        .flatMap(([, data]) => data ?? [])
+        .find((user) => user.id === id);
+    },
+  });
+}`,
+            },
+          },
+          {
+            title: "Mutation Hook'u: useCreateUser",
+            body: "Yazma işlemlerini de custom hook'a taşımak componentleri sadeleştirir. mutationFn input tipi CreateUserInput olur; onSuccess tarafında liste query'lerini invalidate ederek UI'ın güncel kalmasını sağlarsınız.",
+            code: {
+              language: "tsx",
+              filename: "features/users/hooks.ts",
+              code: `import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createUser, type CreateUserInput } from "./api";
+import { userKeys } from "./queryKeys";
+
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateUserInput) => createUser(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.lists() });
+    },
+  });
+}`,
+            },
+          },
+          {
+            title: "Optimistic Update: useUpdateUser",
+            body: "Kullanıcı güncelleme gibi işlemlerde optimistic update ile UI'ı server cevabını beklemeden güncelleyebilirsiniz. onMutate eski cache'i saklar, hata olursa rollback yapar, işlem bitince ilgili query'leri yeniden doğrular.",
+            code: {
+              language: "tsx",
+              filename: "features/users/hooks.ts",
+              code: `import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateUser, type UpdateUserInput, type User } from "./api";
+import { userKeys } from "./queryKeys";
+
+type UpdateUserVariables = {
+  id: number;
+  input: UpdateUserInput;
+};
+
+export function useUpdateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: UpdateUserVariables) => updateUser(id, input),
+    onMutate: async ({ id, input }) => {
+      await queryClient.cancelQueries({ queryKey: userKeys.detail(id) });
+
+      const previousUser = queryClient.getQueryData<User>(userKeys.detail(id));
+
+      queryClient.setQueryData<User>(userKeys.detail(id), (current) =>
+        current ? { ...current, ...input } : current
+      );
+
+      return { previousUser };
+    },
+    onError: (_error, variables, context) => {
+      queryClient.setQueryData(userKeys.detail(variables.id), context?.previousUser);
+    },
+    onSettled: (_data, _error, variables) => {
+      queryClient.invalidateQueries({ queryKey: userKeys.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: userKeys.lists() });
+    },
+  });
+}`,
+            },
+          },
+          {
+            title: "Component İçinde Kullanım",
+            body: "Custom hook yapısı kurulduktan sonra component sadece UI durumlarıyla ilgilenir. data, mutate, isPending ve error alanları TypeScript tarafından doğru tiplerle gelir.",
+            code: {
+              language: "tsx",
+              filename: "components/UserList.tsx",
+              code: `export function UserList() {
+  const users = useUsers({ role: "editor" });
+  const createUser = useCreateUser();
+
+  if (users.isPending) return <p>Yükleniyor...</p>;
+  if (users.isError) return <p>{users.error.message}</p>;
+
+  return (
+    <>
+      <button
+        disabled={createUser.isPending}
+        onClick={() =>
+          createUser.mutate({
+            name: "Ada Lovelace",
+            email: "ada@example.com",
+            role: "editor",
+          })
+        }
+      >
+        Kullanıcı ekle
+      </button>
+
+      <ul>
+        {users.data.map((user) => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
+    </>
+  );
+}`,
             },
           },
           {
@@ -318,18 +545,34 @@ export function Users() {
               filename: "components/CreateUser.tsx",
               code: `import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+type CreateUserInput = {
+  name: string;
+  email: string;
+};
+
+async function createUser(input: CreateUserInput) {
+  const res = await fetch("/api/users", {
+    method: "POST",
+    body: JSON.stringify(input),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!res.ok) throw new Error("Could not create user");
+  return res.json();
+}
+
 export function CreateUser() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: createUser,
+    mutationFn: (input: CreateUserInput) => createUser(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 
   return (
-    <button onClick={() => mutation.mutate({ name: "Ada" })}>
+    <button onClick={() => mutation.mutate({ name: "Ada", email: "ada@example.com" })}>
       Add user
     </button>
   );
@@ -337,21 +580,232 @@ export function CreateUser() {
             },
           },
           {
-            title: "Reusable Custom Hook",
-            body: "When the same query is consumed by multiple components, wrap it in your own hook. This keeps the cache key consistent and centralizes the business logic.",
+            title: "Query Key Factory for TypeScript",
+            body: "The first step in a custom hook setup is generating query keys from one place. Lists, details and filtered queries then share the same naming convention, while invalidation and optimistic updates stay type-safe.",
             code: {
               language: "tsx",
-              filename: "hooks/useUsers.ts",
-              code: `export function useUsers() {
-  return useQuery({
-    queryKey: ["users"],
-    queryFn: fetchUsers,
-    staleTime: 1000 * 60,
+              filename: "features/users/queryKeys.ts",
+              code: `export const userKeys = {
+  all: ["users"] as const,
+  lists: () => [...userKeys.all, "list"] as const,
+  list: (filters: UserFilters) => [...userKeys.lists(), filters] as const,
+  details: () => [...userKeys.all, "detail"] as const,
+  detail: (id: number) => [...userKeys.details(), id] as const,
+};
+
+export type UserFilters = {
+  search?: string;
+  role?: "admin" | "editor" | "viewer";
+};`,
+            },
+          },
+          {
+            title: "Typed API Layer",
+            body: "Keep hooks clean by moving fetch code into small typed API functions. React Query reads the Promise return type from those functions and infers the data type automatically.",
+            code: {
+              language: "tsx",
+              filename: "features/users/api.ts",
+              code: `import type { UserFilters } from "./queryKeys";
+
+export type User = {
+  id: number;
+  name: string;
+  email: string;
+  role: "admin" | "editor" | "viewer";
+};
+
+export type CreateUserInput = Pick<User, "name" | "email" | "role">;
+export type UpdateUserInput = Partial<CreateUserInput>;
+
+async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, init);
+
+  if (!res.ok) {
+    throw new Error("Request failed");
+  }
+
+  return res.json() as Promise<T>;
+}
+
+export function getUsers(filters: UserFilters = {}) {
+  const search = new URLSearchParams();
+  if (filters.search) search.set("search", filters.search);
+  if (filters.role) search.set("role", filters.role);
+
+  return request<User[]>(\`/api/users?\${search.toString()}\`);
+}
+
+export function getUser(id: number) {
+  return request<User>(\`/api/users/\${id}\`);
+}
+
+export function createUser(input: CreateUserInput) {
+  return request<User>("/api/users", {
+    method: "POST",
+    body: JSON.stringify(input),
+    headers: { "Content-Type": "application/json" },
   });
 }
 
-// Usage
-const { data, isLoading } = useUsers();`,
+export function updateUser(id: number, input: UpdateUserInput) {
+  return request<User>(\`/api/users/\${id}\`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+    headers: { "Content-Type": "application/json" },
+  });
+}`,
+            },
+          },
+          {
+            title: "List Hook: useUsers",
+            body: "A list hook that accepts filters keeps both the query key and the query function in one place. keepPreviousData keeps the old list on screen while filters change, and staleTime reduces unnecessary requests.",
+            code: {
+              language: "tsx",
+              filename: "features/users/hooks.ts",
+              code: `import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { getUsers, type UserFilters } from "./api";
+import { userKeys } from "./queryKeys";
+
+export function useUsers(filters: UserFilters = {}) {
+  return useQuery({
+    queryKey: userKeys.list(filters),
+    queryFn: () => getUsers(filters),
+    placeholderData: keepPreviousData,
+    staleTime: 1000 * 60,
+  });
+}`,
+            },
+          },
+          {
+            title: "Detail Hook: useUser",
+            body: "For detail pages, use enabled so the query does not run before an id exists. With initialData, you can seed the detail cache from any user already present in list caches.",
+            code: {
+              language: "tsx",
+              filename: "features/users/hooks.ts",
+              code: `import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getUser, type User } from "./api";
+import { userKeys } from "./queryKeys";
+
+export function useUser(id?: number) {
+  const queryClient = useQueryClient();
+
+  return useQuery({
+    queryKey: id ? userKeys.detail(id) : userKeys.details(),
+    queryFn: () => getUser(id as number),
+    enabled: typeof id === "number",
+    initialData: () => {
+      const users = queryClient.getQueriesData<User[]>({
+        queryKey: userKeys.lists(),
+      });
+
+      return users
+        .flatMap(([, data]) => data ?? [])
+        .find((user) => user.id === id);
+    },
+  });
+}`,
+            },
+          },
+          {
+            title: "Mutation Hook: useCreateUser",
+            body: "Moving write operations into custom hooks keeps components focused. mutationFn receives CreateUserInput, and onSuccess invalidates list queries so the UI stays fresh.",
+            code: {
+              language: "tsx",
+              filename: "features/users/hooks.ts",
+              code: `import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createUser, type CreateUserInput } from "./api";
+import { userKeys } from "./queryKeys";
+
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateUserInput) => createUser(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.lists() });
+    },
+  });
+}`,
+            },
+          },
+          {
+            title: "Optimistic Update: useUpdateUser",
+            body: "For user updates, optimistic updates let the UI change before the server responds. onMutate stores the old cache, onError rolls back if needed, and onSettled revalidates the affected queries.",
+            code: {
+              language: "tsx",
+              filename: "features/users/hooks.ts",
+              code: `import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateUser, type UpdateUserInput, type User } from "./api";
+import { userKeys } from "./queryKeys";
+
+type UpdateUserVariables = {
+  id: number;
+  input: UpdateUserInput;
+};
+
+export function useUpdateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: UpdateUserVariables) => updateUser(id, input),
+    onMutate: async ({ id, input }) => {
+      await queryClient.cancelQueries({ queryKey: userKeys.detail(id) });
+
+      const previousUser = queryClient.getQueryData<User>(userKeys.detail(id));
+
+      queryClient.setQueryData<User>(userKeys.detail(id), (current) =>
+        current ? { ...current, ...input } : current
+      );
+
+      return { previousUser };
+    },
+    onError: (_error, variables, context) => {
+      queryClient.setQueryData(userKeys.detail(variables.id), context?.previousUser);
+    },
+    onSettled: (_data, _error, variables) => {
+      queryClient.invalidateQueries({ queryKey: userKeys.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: userKeys.lists() });
+    },
+  });
+}`,
+            },
+          },
+          {
+            title: "Using the Hooks in a Component",
+            body: "Once the custom hook structure is in place, the component only deals with UI states. TypeScript gives you correctly typed data, mutate, isPending and error fields.",
+            code: {
+              language: "tsx",
+              filename: "components/UserList.tsx",
+              code: `export function UserList() {
+  const users = useUsers({ role: "editor" });
+  const createUser = useCreateUser();
+
+  if (users.isPending) return <p>Loading...</p>;
+  if (users.isError) return <p>{users.error.message}</p>;
+
+  return (
+    <>
+      <button
+        disabled={createUser.isPending}
+        onClick={() =>
+          createUser.mutate({
+            name: "Ada Lovelace",
+            email: "ada@example.com",
+            role: "editor",
+          })
+        }
+      >
+        Add user
+      </button>
+
+      <ul>
+        {users.data.map((user) => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
+    </>
+  );
+}`,
             },
           },
           {
