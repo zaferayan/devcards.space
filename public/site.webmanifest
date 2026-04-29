@@ -1,0 +1,16 @@
+{
+  "name": "devcards.space",
+  "short_name": "DevCards",
+  "description": "Developer İnfografikleri — modern web geliştirme rehberleri",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#7c5cff",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

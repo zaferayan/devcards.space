@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="js-title js-desc">
+  <title id="js-title">JSON Server akışı infografiği</title>
+  <desc id="js-desc">db.json dosyasından otomatik üretilen REST endpointlerini ve CRUD akışını gösteren görsel</desc>
+  <defs>
+    <linearGradient id="js-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f0fff7" />
+      <stop offset="100%" stop-color="#dff7ec" />
+    </linearGradient>
+    <filter id="js-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#0a8a4a" flood-opacity="0.12" />
+    </filter>
+    <marker id="js-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0a8a4a" />
+    </marker>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#js-bg)" />
+
+  <text x="600" y="80" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="44" font-weight="800" fill="#0e0e12">JSON Server — db.json'dan REST API</text>
+  <text x="600" y="120" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="20" fill="#3f3f48">Tek dosya · sıfır yapılandırma · tam CRUD</text>
+
+  <!-- db.json file -->
+  <g filter="url(#js-shadow)">
+    <rect x="80" y="200" width="320" height="380" rx="20" fill="#0e0e12" />
+    <text x="100" y="240" font-family="ui-monospace, monospace" font-size="16" font-weight="700" fill="#10b981">db.json</text>
+    <text x="100" y="280" font-family="ui-monospace, monospace" font-size="14" fill="#d8d8de">{"{"}</text>
+    <text x="120" y="305" font-family="ui-monospace, monospace" font-size="14" fill="#7c5cff">"posts"<tspan fill="#d8d8de">: [</tspan></text>
+    <text x="140" y="330" font-family="ui-monospace, monospace" font-size="13" fill="#d8d8de">{"{ id: 1, title: ..., views: 120 }"}</text>
+    <text x="140" y="352" font-family="ui-monospace, monospace" font-size="13" fill="#d8d8de">{"{ id: 2, title: ..., views: 87 }"}</text>
+    <text x="120" y="378" font-family="ui-monospace, monospace" font-size="14" fill="#d8d8de">],</text>
+    <text x="120" y="408" font-family="ui-monospace, monospace" font-size="14" fill="#7c5cff">"comments"<tspan fill="#d8d8de">: [...]</tspan></text>
+    <text x="120" y="438" font-family="ui-monospace, monospace" font-size="14" fill="#7c5cff">"profile"<tspan fill="#d8d8de">: {"{ ... }"}</tspan></text>
+    <text x="100" y="468" font-family="ui-monospace, monospace" font-size="14" fill="#d8d8de">{"}"}</text>
+    <text x="100" y="540" font-family="ui-monospace, monospace" font-size="13" fill="#10b981">$ json-server --watch db.json</text>
+  </g>
+
+  <!-- Arrow -->
+  <line x1="420" y1="380" x2="540" y2="380" stroke="#0a8a4a" stroke-width="4" marker-end="url(#js-arrow)" />
+  <text x="480" y="370" text-anchor="middle" font-family="Inter" font-size="14" font-weight="700" fill="#0a8a4a">otomatik</text>
+
+  <!-- Endpoints -->
+  <g filter="url(#js-shadow)">
+    <rect x="560" y="200" width="560" height="380" rx="20" fill="#ffffff" stroke="#d8d8de" />
+    <text x="840" y="240" text-anchor="middle" font-family="Inter" font-size="22" font-weight="700" fill="#1a1a1f">Üretilen REST Endpointleri</text>
+
+    <g font-family="ui-monospace, monospace" font-size="15">
+      <rect x="585" y="270" width="55" height="26" rx="6" fill="#10b981" />
+      <text x="612" y="288" text-anchor="middle" fill="#ffffff" font-weight="700">GET</text>
+      <text x="660" y="288" fill="#1a1a1f">/posts · /posts/1 · /posts?_page=1&amp;_limit=10</text>
+
+      <rect x="585" y="310" width="55" height="26" rx="6" fill="#3b82f6" />
+      <text x="612" y="328" text-anchor="middle" fill="#ffffff" font-weight="700">POST</text>
+      <text x="660" y="328" fill="#1a1a1f">/posts — yeni kayıt ekle</text>
+
+      <rect x="585" y="350" width="55" height="26" rx="6" fill="#f59e0b" />
+      <text x="612" y="368" text-anchor="middle" fill="#ffffff" font-weight="700">PUT</text>
+      <text x="660" y="368" fill="#1a1a1f">/posts/1 — tamamen değiştir</text>
+
+      <rect x="585" y="390" width="55" height="26" rx="6" fill="#8b5cf6" />
+      <text x="612" y="408" text-anchor="middle" fill="#ffffff" font-weight="700" font-size="13">PATCH</text>
+      <text x="660" y="408" fill="#1a1a1f">/posts/1 — kısmi güncelleme</text>
+
+      <rect x="585" y="430" width="55" height="26" rx="6" fill="#ef4444" />
+      <text x="612" y="448" text-anchor="middle" fill="#ffffff" font-weight="700" font-size="13">DEL</text>
+      <text x="660" y="448" fill="#1a1a1f">/posts/1 — sil</text>
+    </g>
+
+    <text x="585" y="495" font-family="Inter" font-size="14" font-weight="700" fill="#0a8a4a">+ Otomatik özellikler:</text>
+    <text x="585" y="518" font-family="Inter" font-size="13" fill="#3f3f48">• Filtre · Sıralama · Sayfalama · Full-text arama</text>
+    <text x="585" y="540" font-family="Inter" font-size="13" fill="#3f3f48">• İlişkisel sorgular: /posts/1/comments</text>
+    <text x="585" y="562" font-family="Inter" font-size="13" fill="#3f3f48">• Custom routes &amp; middleware desteği</text>
+  </g>
+
+  <!-- Stats footer -->
+  <g>
+    <rect x="80" y="650" width="1040" height="100" rx="20" fill="#0e0e12" />
+    <text x="240" y="690" text-anchor="middle" font-family="Inter" font-size="30" font-weight="800" fill="#10b981">30 sn</text>
+    <text x="240" y="715" text-anchor="middle" font-family="Inter" font-size="14" fill="#d8d8de">kurulum süresi</text>
+    <text x="240" y="735" text-anchor="middle" font-family="Inter" font-size="12" fill="#878793">npm i json-server</text>
+
+    <text x="500" y="690" text-anchor="middle" font-family="Inter" font-size="30" font-weight="800" fill="#10b981">0 LOC</text>
+    <text x="500" y="715" text-anchor="middle" font-family="Inter" font-size="14" fill="#d8d8de">backend kod yazılmaz</text>
+
+    <text x="760" y="690" text-anchor="middle" font-family="Inter" font-size="30" font-weight="800" fill="#10b981">5 fiil</text>
+    <text x="760" y="715" text-anchor="middle" font-family="Inter" font-size="14" fill="#d8d8de">tam REST desteği</text>
+
+    <text x="1000" y="690" text-anchor="middle" font-family="Inter" font-size="30" font-weight="800" fill="#10b981">∞</text>
+    <text x="1000" y="715" text-anchor="middle" font-family="Inter" font-size="14" fill="#d8d8de">prototip hızı</text>
+  </g>
+</svg>

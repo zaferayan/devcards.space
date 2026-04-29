@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="rq-title rq-desc">
+  <title id="rq-title">React Query çalışma akışı infografiği</title>
+  <desc id="rq-desc">React Query'nin useQuery, cache, mutation ve invalidation aşamalarını gösteren görsel akış</desc>
+  <defs>
+    <linearGradient id="rq-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8f7ff" />
+      <stop offset="100%" stop-color="#ece8ff" />
+    </linearGradient>
+    <linearGradient id="rq-card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f6f4ff" />
+    </linearGradient>
+    <filter id="rq-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#5a3df0" flood-opacity="0.12" />
+    </filter>
+    <marker id="rq-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7c5cff" />
+    </marker>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#rq-bg)" />
+
+  <text x="600" y="80" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="44" font-weight="800" fill="#1a1a1f">React Query — Veri Akışı</text>
+  <text x="600" y="120" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="20" fill="#5b5b67">Component → Cache → Server döngüsü</text>
+
+  <!-- Component -->
+  <g filter="url(#rq-shadow)">
+    <rect x="80" y="200" width="260" height="160" rx="20" fill="url(#rq-card)" stroke="#d8d8de" />
+    <text x="210" y="240" text-anchor="middle" font-family="Inter" font-size="22" font-weight="700" fill="#1a1a1f">Component</text>
+    <text x="210" y="280" text-anchor="middle" font-family="ui-monospace, monospace" font-size="16" fill="#5a3df0">useQuery({"{ key, fn }"})</text>
+    <text x="210" y="310" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">isLoading · data · error</text>
+    <text x="210" y="335" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">otomatik render</text>
+  </g>
+
+  <!-- Cache -->
+  <g filter="url(#rq-shadow)">
+    <rect x="470" y="200" width="260" height="160" rx="20" fill="url(#rq-card)" stroke="#d8d8de" />
+    <text x="600" y="240" text-anchor="middle" font-family="Inter" font-size="22" font-weight="700" fill="#1a1a1f">Query Cache</text>
+    <text x="600" y="275" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">stale / fresh durumu</text>
+    <text x="600" y="298" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">deduplication</text>
+    <text x="600" y="321" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">background refetch</text>
+    <text x="600" y="344" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">garbage collection</text>
+  </g>
+
+  <!-- Server -->
+  <g filter="url(#rq-shadow)">
+    <rect x="860" y="200" width="260" height="160" rx="20" fill="url(#rq-card)" stroke="#d8d8de" />
+    <text x="990" y="240" text-anchor="middle" font-family="Inter" font-size="22" font-weight="700" fill="#1a1a1f">API / Server</text>
+    <text x="990" y="275" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">REST · GraphQL</text>
+    <text x="990" y="298" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">tRPC · gRPC</text>
+    <text x="990" y="321" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">veritabanı</text>
+  </g>
+
+  <!-- Arrows -->
+  <line x1="340" y1="280" x2="470" y2="280" stroke="#7c5cff" stroke-width="3" marker-end="url(#rq-arrow)" />
+  <line x1="730" y1="280" x2="860" y2="280" stroke="#7c5cff" stroke-width="3" marker-end="url(#rq-arrow)" />
+  <line x1="860" y1="300" x2="730" y2="300" stroke="#7c5cff" stroke-width="3" stroke-dasharray="6 4" marker-end="url(#rq-arrow)" />
+  <line x1="470" y1="300" x2="340" y2="300" stroke="#7c5cff" stroke-width="3" stroke-dasharray="6 4" marker-end="url(#rq-arrow)" />
+
+  <!-- Bottom: features grid -->
+  <text x="600" y="450" text-anchor="middle" font-family="Inter" font-size="26" font-weight="700" fill="#1a1a1f">Temel Hook'lar</text>
+
+  <g filter="url(#rq-shadow)">
+    <rect x="80" y="490" width="240" height="120" rx="16" fill="#ffffff" stroke="#d8d8de" />
+    <text x="200" y="525" text-anchor="middle" font-family="ui-monospace, monospace" font-size="18" font-weight="700" fill="#5a3df0">useQuery</text>
+    <text x="200" y="555" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">veri okuma</text>
+    <text x="200" y="578" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">cache + revalidate</text>
+  </g>
+
+  <g filter="url(#rq-shadow)">
+    <rect x="340" y="490" width="240" height="120" rx="16" fill="#ffffff" stroke="#d8d8de" />
+    <text x="460" y="525" text-anchor="middle" font-family="ui-monospace, monospace" font-size="18" font-weight="700" fill="#5a3df0">useMutation</text>
+    <text x="460" y="555" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">veri yazma</text>
+    <text x="460" y="578" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">optimistic update</text>
+  </g>
+
+  <g filter="url(#rq-shadow)">
+    <rect x="600" y="490" width="240" height="120" rx="16" fill="#ffffff" stroke="#d8d8de" />
+    <text x="720" y="525" text-anchor="middle" font-family="ui-monospace, monospace" font-size="18" font-weight="700" fill="#5a3df0">useInfiniteQuery</text>
+    <text x="720" y="555" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">sonsuz scroll</text>
+    <text x="720" y="578" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">pagination</text>
+  </g>
+
+  <g filter="url(#rq-shadow)">
+    <rect x="860" y="490" width="240" height="120" rx="16" fill="#ffffff" stroke="#d8d8de" />
+    <text x="980" y="525" text-anchor="middle" font-family="ui-monospace, monospace" font-size="18" font-weight="700" fill="#5a3df0">queryClient</text>
+    <text x="980" y="555" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">invalidate</text>
+    <text x="980" y="578" text-anchor="middle" font-family="Inter" font-size="14" fill="#5b5b67">prefetch · setData</text>
+  </g>
+
+  <!-- Stats footer -->
+  <g>
+    <rect x="80" y="660" width="1040" height="90" rx="20" fill="#1a1a1f" />
+    <text x="200" y="700" text-anchor="middle" font-family="Inter" font-size="32" font-weight="800" fill="#7c5cff">42k+</text>
+    <text x="200" y="725" text-anchor="middle" font-family="Inter" font-size="14" fill="#d8d8de">GitHub stars</text>
+    <text x="450" y="700" text-anchor="middle" font-family="Inter" font-size="32" font-weight="800" fill="#7c5cff">~13kB</text>
+    <text x="450" y="725" text-anchor="middle" font-family="Inter" font-size="14" fill="#d8d8de">min+gzip boyut</text>
+    <text x="700" y="700" text-anchor="middle" font-family="Inter" font-size="32" font-weight="800" fill="#7c5cff">0</text>
+    <text x="700" y="725" text-anchor="middle" font-family="Inter" font-size="14" fill="#d8d8de">bağımlılık</text>
+    <text x="950" y="700" text-anchor="middle" font-family="Inter" font-size="32" font-weight="800" fill="#7c5cff">SSR</text>
+    <text x="950" y="725" text-anchor="middle" font-family="Inter" font-size="14" fill="#d8d8de">Next.js uyumlu</text>
+  </g>
+</svg>
