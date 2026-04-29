@@ -8,7 +8,7 @@ export const reactQuery: Infographic = {
   tags: ["React", "Frontend"],
   publishedAt: "2025-08-15",
   updatedAt: "2026-04-29",
-  readingMinutes: 15,
+  readingMinutes: 16,
   translations: {
     tr: {
       slug: "react-query-nedir",
@@ -36,16 +36,16 @@ export const reactQuery: Infographic = {
             bullets: [
               "Sunucu verisi için cache + senkronizasyon",
               "Arka planda otomatik güncelleme",
-              "Gereksiz useEffect / loading state kodlarını siler",
+              "Gereksiz useEffect / pending state kodlarını siler",
             ],
           },
           {
             title: "Neden React Query Kullanmalı?",
-            body: "Manuel fetch kodları büyüdükçe loading, error, retry, deduplication ve refetch yönetimi karmaşıklaşır. React Query bu kalıpları sıfır yapılandırma ile çözer ve uygulamanın hem hızını hem geliştirici deneyimini artırır.",
+            body: "Manuel fetch kodları büyüdükçe pending, error, retry, deduplication ve refetch yönetimi karmaşıklaşır. React Query bu kalıpları sıfır yapılandırma ile çözer ve uygulamanın hem hızını hem geliştirici deneyimini artırır.",
             bullets: [
               "Otomatik cache ve istek tekilleştirme (deduplication)",
               "Arka planda yeniden çekme ve senkronizasyon",
-              "Built-in loading, error ve success durumları",
+              "Built-in pending, error ve success durumları",
               "Retry ve stale-while-revalidate stratejisi",
               "Daha az boilerplate, daha temiz componentler",
             ],
@@ -81,7 +81,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           },
           {
             title: "useQuery + TypeScript ile Veri Çekme",
-            body: "useQuery; queryKey ve queryFn parametrelerini alır, geri dönüş değerini sizin tip tanımınıza göre çıkarsar. TypeScript ile birleşince data, error ve isLoading tamamen tip-güvenli olur.",
+            body: "useQuery; queryKey ve queryFn parametrelerini alır, geri dönüş değerini sizin tip tanımınıza göre çıkarsar. TanStack Query v5'te ilk yükleme durumu için temel flag isPending'dir; TypeScript ile birleşince data, error ve isPending tamamen tip-güvenli olur.",
             code: {
               language: "tsx",
               filename: "components/Users.tsx",
@@ -99,12 +99,12 @@ async function fetchUsers(): Promise<User[]> {
 }
 
 export function Users() {
-  const { data, isLoading, isError } = useQuery({
+  const { data, isPending, isError } = useQuery({
     queryKey: ["users"],
     queryFn: fetchUsers,
   });
 
-  if (isLoading) return <p>Yükleniyor…</p>;
+  if (isPending) return <p>Yükleniyor…</p>;
   if (isError) return <p>Bir hata oluştu</p>;
 
   return (
@@ -469,6 +469,25 @@ export function useUpdateUser() {
             },
           },
           {
+            title: "v5 Durum Flag'leri",
+            body: "TanStack Query v5'te status: 'loading' yerine status: 'pending' kullanılır. isPending verinin henüz hazır olmadığı ilk durumu anlatır; isFetching arka plan dahil aktif fetch'i, isLoading ise isPending && isFetching türetilmiş durumunu temsil eder.",
+            code: {
+              language: "tsx",
+              filename: "components/UsersStatus.tsx",
+              code: `const users = useUsers();
+
+if (users.isPending) return <p>Yükleniyor...</p>;
+if (users.isError) return <p>{users.error.message}</p>;
+
+return (
+  <>
+    {users.isFetching && <span>Güncelleniyor...</span>}
+    <UserTable users={users.data} />
+  </>
+);`,
+            },
+          },
+          {
             title: "Temel Kavramlar",
             body: "React Query'nin gücünü anlamak için bilmeniz gereken anahtar kavramlar:",
             bullets: [
@@ -476,7 +495,8 @@ export function useUpdateUser() {
               "queryFn — Promise döndüren async fonksiyon",
               "staleTime — verinin ne kadar süre 'taze' kabul edileceği",
               "cacheTime / gcTime — kullanılmayan cache'in ne kadar süre tutulacağı",
-              "isLoading & isError — UI durumları için hazır flag'ler",
+              "isPending & isError — UI durumları için hazır flag'ler",
+              "isFetching — ilk yükleme ve arka plan refetch sırasında aktif olur",
               "enabled — sorgunun şartlı çalışması için (örn. id geldiğinde)",
             ],
           },
@@ -540,16 +560,16 @@ export function useUpdateUser() {
             bullets: [
               "Cache + synchronization for server data",
               "Automatic background refresh",
-              "Removes excessive useEffect / loading-state code",
+              "Removes excessive useEffect / pending-state code",
             ],
           },
           {
             title: "Why Use React Query?",
-            body: "As manual fetch code grows, the management of loading, error, retry, deduplication and refetch states becomes complex. React Query solves these patterns with zero configuration and improves both performance and developer experience.",
+            body: "As manual fetch code grows, the management of pending, error, retry, deduplication and refetch states becomes complex. React Query solves these patterns with zero configuration and improves both performance and developer experience.",
             bullets: [
               "Automatic caching and request deduplication",
               "Background refetch and synchronization",
-              "Built-in loading, error and success states",
+              "Built-in pending, error and success states",
               "Retry and stale-while-revalidate strategy",
               "Cleaner components with less boilerplate",
             ],
@@ -585,7 +605,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           },
           {
             title: "Fetching Data with useQuery + TypeScript",
-            body: "useQuery takes queryKey and queryFn parameters and infers the return type from your typing. Combined with TypeScript, data, error and isLoading become fully type-safe.",
+            body: "useQuery takes queryKey and queryFn parameters and infers the return type from your typing. In TanStack Query v5, isPending is the primary flag for the initial no-data state; combined with TypeScript, data, error and isPending become fully type-safe.",
             code: {
               language: "tsx",
               filename: "components/Users.tsx",
@@ -603,12 +623,12 @@ async function fetchUsers(): Promise<User[]> {
 }
 
 export function Users() {
-  const { data, isLoading, isError } = useQuery({
+  const { data, isPending, isError } = useQuery({
     queryKey: ["users"],
     queryFn: fetchUsers,
   });
 
-  if (isLoading) return <p>Loading…</p>;
+  if (isPending) return <p>Loading…</p>;
   if (isError) return <p>Something went wrong</p>;
 
   return (
@@ -973,6 +993,25 @@ export function useUpdateUser() {
             },
           },
           {
+            title: "v5 Status Flags",
+            body: "In TanStack Query v5, status: 'loading' became status: 'pending'. isPending describes the initial no-data state; isFetching covers any active fetch including background refetches, and isLoading is the derived isPending && isFetching state.",
+            code: {
+              language: "tsx",
+              filename: "components/UsersStatus.tsx",
+              code: `const users = useUsers();
+
+if (users.isPending) return <p>Loading...</p>;
+if (users.isError) return <p>{users.error.message}</p>;
+
+return (
+  <>
+    {users.isFetching && <span>Updating...</span>}
+    <UserTable users={users.data} />
+  </>
+);`,
+            },
+          },
+          {
             title: "Key Concepts",
             body: "The vocabulary you'll see again and again with React Query:",
             bullets: [
@@ -980,7 +1019,8 @@ export function useUpdateUser() {
               "queryFn — async function returning a Promise",
               "staleTime — how long data is considered fresh",
               "cacheTime / gcTime — how long unused cache is retained",
-              "isLoading & isError — ready-to-use UI flags",
+              "isPending & isError — ready-to-use UI flags",
+              "isFetching — active during initial loads and background refetches",
               "enabled — to run a query conditionally (e.g. when id is set)",
             ],
           },
