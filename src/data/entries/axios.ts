@@ -7,8 +7,8 @@ export const axios: Infographic = {
   imageHeight: 992,
   tags: ["Frontend", "Tools"],
   publishedAt: "2026-04-28",
-  updatedAt: "2026-04-28",
-  readingMinutes: 7,
+  updatedAt: "2026-04-29",
+  readingMinutes: 9,
   translations: {
     tr: {
       slug: "axios-nedir",
@@ -86,18 +86,96 @@ const fetchUsers = async () => {
             },
           },
           {
+            title: "TypeScript ile GET",
+            body: "Axios generic tip alabilir. Böylece response.data alanı any yerine beklediğiniz model olarak gelir ve component tarafında autocomplete/type-safety kazanırsınız.",
+            code: {
+              language: "ts",
+              filename: "api/users.ts",
+              code: `import axios from "axios";
+
+type User = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+export async function getUsers() {
+  const res = await axios.get<User[]>("/api/users");
+  return res.data;
+}
+
+const users = await getUsers();
+users[0].email; // string`,
+            },
+          },
+          {
+            title: "TypeScript ile POST",
+            body: "Request body ve response modelini ayrı tipleyin. Özellikle form, auth ve create/update akışlarında hatalı alan adlarını erken yakalamak için çok değerlidir.",
+            code: {
+              language: "ts",
+              filename: "api/users.ts",
+              code: `import { api } from "@/lib/api";
+
+type CreateUserInput = {
+  name: string;
+  email: string;
+};
+
+type User = CreateUserInput & {
+  id: string;
+};
+
+export async function createUser(input: CreateUserInput) {
+  const res = await api.post<User>("/users", input);
+  return res.data;
+}
+
+await createUser({
+  name: "Ada",
+  email: "ada@dev.com",
+});`,
+            },
+          },
+          {
             title: "Axios Instance (ÖNEMLİ)",
             body: "Tekrar eden ayarları bir instance'a toplayın: baseURL, timeout, ortak başlıklar. Tüm uygulamadan aynı instance'ı kullanmak yapılandırma karmaşasını ortadan kaldırır.",
             code: {
               language: "ts",
               filename: "lib/api.ts",
-              code: `export const api = axios.create({
+              code: `import axios from "axios";
+
+export const api = axios.create({
   baseURL: "https://example.com/api",
   timeout: 5000,
   headers: { Accept: "application/json" },
 });
 
 api.get("/users");`,
+            },
+          },
+          {
+            title: "Tipli API Katmanı",
+            body: "Projede raw axios çağrılarını component içine yaymak yerine küçük, tipli fonksiyonlar yazın. Bu yapı React Query, Zustand veya server actions ile daha rahat birleşir.",
+            code: {
+              language: "ts",
+              filename: "services/users.ts",
+              code: `import { api } from "@/lib/api";
+
+type ApiResponse<T> = {
+  data: T;
+  message?: string;
+};
+
+type User = {
+  id: string;
+  name: string;
+  role: "admin" | "editor" | "viewer";
+};
+
+export async function getUser(id: string) {
+  const res = await api.get<ApiResponse<User>>(\`/users/\${id}\`);
+  return res.data.data;
+}`,
             },
           },
           {
@@ -125,10 +203,15 @@ api.interceptors.response.use(
             body: "fetch'ten farklı olarak Axios, 4xx/5xx kodlarında otomatik olarak Promise'ı reject eder. try/catch ile yakalayıp error.response üzerinden detaylara erişirsiniz.",
             code: {
               language: "ts",
-              code: `try {
+              code: `type ApiError = {
+  message: string;
+  code?: string;
+};
+
+try {
   const res = await api.get("/users");
 } catch (err) {
-  if (axios.isAxiosError(err)) {
+  if (axios.isAxiosError<ApiError>(err)) {
     console.log(err.response?.status, err.response?.data);
   }
 }`,
@@ -163,6 +246,7 @@ api.interceptors.response.use(
             bullets: [
               "REST API tüketimi",
               "Authentication akışları (token interceptor)",
+              "TypeScript ile tipli API servisleri",
               "Modern frontend frameworkleriyle",
               "React Query gibi kütüphanelerle birlikte",
             ],
@@ -277,18 +361,96 @@ const fetchUsers = async () => {
             },
           },
           {
+            title: "GET with TypeScript",
+            body: "Axios accepts generic types. That makes response.data the model you expect instead of any, giving your components autocomplete and type safety.",
+            code: {
+              language: "ts",
+              filename: "api/users.ts",
+              code: `import axios from "axios";
+
+type User = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+export async function getUsers() {
+  const res = await axios.get<User[]>("/api/users");
+  return res.data;
+}
+
+const users = await getUsers();
+users[0].email; // string`,
+            },
+          },
+          {
+            title: "POST with TypeScript",
+            body: "Type the request body and response model separately. This is especially useful for forms, auth flows and create/update screens where field names drift easily.",
+            code: {
+              language: "ts",
+              filename: "api/users.ts",
+              code: `import { api } from "@/lib/api";
+
+type CreateUserInput = {
+  name: string;
+  email: string;
+};
+
+type User = CreateUserInput & {
+  id: string;
+};
+
+export async function createUser(input: CreateUserInput) {
+  const res = await api.post<User>("/users", input);
+  return res.data;
+}
+
+await createUser({
+  name: "Ada",
+  email: "ada@dev.com",
+});`,
+            },
+          },
+          {
             title: "Axios Instance (IMPORTANT)",
             body: "Collect repeated settings into an instance: baseURL, timeout, common headers. Using a single instance everywhere removes configuration drift.",
             code: {
               language: "ts",
               filename: "lib/api.ts",
-              code: `export const api = axios.create({
+              code: `import axios from "axios";
+
+export const api = axios.create({
   baseURL: "https://example.com/api",
   timeout: 5000,
   headers: { Accept: "application/json" },
 });
 
 api.get("/users");`,
+            },
+          },
+          {
+            title: "Typed API Layer",
+            body: "Instead of spreading raw axios calls across components, write small typed functions. This shape plugs cleanly into React Query, Zustand or server actions.",
+            code: {
+              language: "ts",
+              filename: "services/users.ts",
+              code: `import { api } from "@/lib/api";
+
+type ApiResponse<T> = {
+  data: T;
+  message?: string;
+};
+
+type User = {
+  id: string;
+  name: string;
+  role: "admin" | "editor" | "viewer";
+};
+
+export async function getUser(id: string) {
+  const res = await api.get<ApiResponse<User>>(\`/users/\${id}\`);
+  return res.data.data;
+}`,
             },
           },
           {
@@ -316,10 +478,15 @@ api.interceptors.response.use(
             body: "Unlike fetch, Axios automatically rejects on 4xx/5xx codes. Catch with try/catch and inspect error.response for details.",
             code: {
               language: "ts",
-              code: `try {
+              code: `type ApiError = {
+  message: string;
+  code?: string;
+};
+
+try {
   const res = await api.get("/users");
 } catch (err) {
-  if (axios.isAxiosError(err)) {
+  if (axios.isAxiosError<ApiError>(err)) {
     console.log(err.response?.status, err.response?.data);
   }
 }`,
@@ -354,6 +521,7 @@ api.interceptors.response.use(
             bullets: [
               "Consuming REST APIs",
               "Authentication flows (token interceptor)",
+              "Typed API services with TypeScript",
               "Modern frontend frameworks",
               "Working alongside React Query",
             ],
