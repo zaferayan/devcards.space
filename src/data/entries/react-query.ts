@@ -7,16 +7,16 @@ export const reactQuery: Infographic = {
   imageHeight: 1024,
   tags: ["React", "Frontend"],
   publishedAt: "2025-08-15",
-  updatedAt: "2026-04-29",
+  updatedAt: "2026-04-30",
   readingMinutes: 9,
   translations: {
     tr: {
       slug: "react-query-nedir",
       title: "React Query Nedir? Axios ve TypeScript ile Mutation Rehberi",
       description:
-        "React Query (TanStack Query) ile Axios baseURL ayari, login mutation, create user ve update user hook'larini TypeScript ile kurun.",
+        "React Query (TanStack Query) ile Axios baseURL ayarı, login mutation, create user ve update user hook'larını TypeScript ile kurun.",
       imageAlt:
-        "React Query infografik karti: server state, cache, mutation ve TypeScript konularini ozetleyen gorsel",
+        "React Query infografik kartı: server state, cache, mutation ve TypeScript konularını özetleyen görsel",
       keywords: [
         "react query",
         "tanstack query",
@@ -28,21 +28,21 @@ export const reactQuery: Infographic = {
       ],
       content: {
         intro:
-          "React Query (TanStack Query), React uygulamalarinda server state'i yonetmek icin kullanilir. Gercek projelerde bu yapi genelde Axios ile kurulan tek bir API client'in uzerine oturur: login, create user ve update user gibi mutation hook'lari tek yerde yazilir; componentler sadece form state'i ve UI durumlariyla ilgilenir.",
+          "React Query (TanStack Query), React uygulamalarında server state'i yönetmek için kullanılır. Gerçek projelerde bu yapı genelde Axios ile kurulan tek bir API client'ın üzerine oturur: login, create user ve update user gibi mutation hook'ları tek yerde yazılır; componentler sadece form state'i ve UI durumlarıyla ilgilenir.",
         sections: [
           {
             title: "React Query Nedir?",
-            body: "React Query, API'den gelen veriyi cache'ler, yeniden dogrular ve mutation sonrasi UI'in guncel kalmasini kolaylastirir. Client state yerine server state'e odaklanir; yani form input'u degil, API cevabi, loading/pending durumu, hata ve cache senkronizasyonu onun alanidir.",
+            body: "React Query, API'den gelen veriyi cache'ler, yeniden doğrular ve mutation sonrası UI'ın güncel kalmasını kolaylaştırır. Client state yerine server state'e odaklanır; yani form input'u değil, API cevabı, loading/pending durumu, hata ve cache senkronizasyonu onun alanıdır.",
             bullets: [
-              "Server state icin cache ve yeniden dogrulama",
+              "Server state için cache ve yeniden doğrulama",
               "useQuery ile okuma, useMutation ile yazma",
-              "Mutation sonrasi invalidateQueries ile otomatik refetch",
-              "TypeScript ile input ve response tiplerini uctan uca koruma",
+              "Mutation sonrası invalidateQueries ile otomatik refetch",
+              "TypeScript ile input ve response tiplerini uçtan uca koruma",
             ],
           },
           {
             title: "Kurulum",
-            body: "React Query ve Axios'u birlikte kullanacagiz. React Query server state'i, Axios ise HTTP client katmanini yonetecek.",
+            body: "React Query ve Axios'u birlikte kullanacağız. React Query server state'i, Axios ise HTTP client katmanını yönetecek.",
             code: {
               language: "bash",
               code: "npm install @tanstack/react-query axios",
@@ -50,7 +50,7 @@ export const reactQuery: Infographic = {
           },
           {
             title: "QueryClientProvider",
-            body: "Uygulamanin cache'i paylasabilmesi icin QueryClient'i root seviyesinde bir kez olusturup provider ile sarmalayin.",
+            body: "Uygulamanın cache'i paylaşabilmesi için QueryClient'ı root seviyesinde bir kez oluşturup provider ile sarmalayın.",
             code: {
               language: "tsx",
               filename: "app/providers.tsx",
@@ -71,8 +71,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
             },
           },
           {
-            title: "Axios BaseURL Ayari",
-            body: "Tek bir Axios instance olusturmak tekrar eden baseURL, header ve token ayarlarini merkezilestirir. Hook'lar artik raw fetch veya daginik axios cagirilari yerine bu api instance'ini kullanir.",
+            title: "Axios BaseURL Ayarı",
+            body: "Tek bir Axios instance oluşturmak tekrar eden baseURL, header ve token ayarlarını merkezileştirir. Hook'lar artık raw fetch veya dağınık axios çağrıları yerine bu api instance'ını kullanır.",
             code: {
               language: "ts",
               filename: "lib/api.ts",
@@ -98,7 +98,7 @@ export function setAuthToken(token?: string) {
           },
           {
             title: "Ortak TypeScript Tipleri",
-            body: "Input ve response tiplerini once ayirmak hook'lari temiz tutar. Login farkli bir response doner; user create/update ise User modeli uzerinden ilerler.",
+            body: "Input ve response tiplerini önce ayırmak hook'ları temiz tutar. Login farklı bir response döner; user create/update ise User modeli üzerinden ilerler.",
             code: {
               language: "ts",
               filename: "features/users/types.ts",
@@ -130,7 +130,7 @@ export type UpdateUserInput = Partial<CreateUserInput>;`,
           },
           {
             title: "Login Mutation",
-            body: "Login bir yazma islemidir; bu yuzden useMutation ile modellenir. Basarili olunca token'i Axios instance'a ve localStorage'a yazabilir, kullanici bilgisini component tarafinda kullanabilirsiniz.",
+            body: "Login bir yazma işlemidir; bu yüzden useMutation ile modellenir. Başarılı olunca token'ı Axios instance'a ve localStorage'a yazabilir, kullanıcı bilgisini component tarafında kullanabilirsiniz.",
             code: {
               language: "tsx",
               filename: "features/auth/useLogin.ts",
@@ -140,10 +140,8 @@ import type { LoginInput, LoginResponse } from "@/features/users/types";
 
 export const useLogin = () => {
   return useMutation({
-    mutationFn: async (input: LoginInput) => {
-      const { data } = await api.post<LoginResponse>("/auth/login", input);
-      return data;
-    },
+    mutationFn: (input: LoginInput) =>
+      api.post<LoginResponse>("/auth/login", input).then(({ data }) => data),
     onSuccess: (data) => {
       setAuthToken(data.accessToken);
       localStorage.setItem("accessToken", data.accessToken);
@@ -154,7 +152,7 @@ export const useLogin = () => {
           },
           {
             title: "Login Formunda mutateAsync",
-            body: "Form submit icinde sonuc bekleyecekseniz mutateAsync daha okunaklidir. try/catch ile hatayi yakalar, basari sonrasi redirect veya toast gibi sirali isleri rahatca yaparsiniz.",
+            body: "Form submit içinde sonucu bekleyecekseniz mutateAsync'i .then/.catch ile zincirlemek daha okunaklıdır. Hata yakalama, başarı sonrası redirect veya toast gibi sıralı işleri tek akışta tutarsınız.",
             code: {
               language: "tsx",
               filename: "components/LoginForm.tsx",
@@ -167,14 +165,16 @@ export function LoginForm() {
   const router = useRouter();
   const login = useLogin();
 
-  async function onSubmit(input: { email: string; password: string }) {
-    try {
-      const session = await login.mutateAsync(input);
-      router.push("/dashboard");
-      console.log("Hos geldin", session.user.name);
-    } catch {
-      console.log("Email veya sifre hatali");
-    }
+  function onSubmit(input: { email: string; password: string }) {
+    login
+      .mutateAsync(input)
+      .then((session) => {
+        router.push("/dashboard");
+        console.log("Hoş geldin", session.user.name);
+      })
+      .catch(() => {
+        console.log("Email veya şifre hatalı");
+      });
   }
 
   return (
@@ -182,7 +182,7 @@ export function LoginForm() {
       disabled={login.isPending}
       onClick={() => onSubmit({ email: "ada@dev.com", password: "secret" })}
     >
-      {login.isPending ? "Giris yapiliyor..." : "Giris yap"}
+      {login.isPending ? "Giriş yapılıyor..." : "Giriş yap"}
     </button>
   );
 }`,
@@ -190,7 +190,7 @@ export function LoginForm() {
           },
           {
             title: "User Query Key'leri",
-            body: "Create ve update islemlerinden sonra hangi cache'in yenilenecegini netlestirmek icin query key'leri tek yerden uretin.",
+            body: "Create ve update işlemlerinden sonra hangi cache'in yenileneceğini netleştirmek için query key'leri tek yerden üretin.",
             code: {
               language: "ts",
               filename: "features/users/queryKeys.ts",
@@ -203,7 +203,7 @@ export function LoginForm() {
           },
           {
             title: "Create User Mutation",
-            body: "Yeni kullanici olusturuldugunda liste cache'ini invalidate etmek yeterlidir. Boylece listeyi elle set etmeye gerek kalmadan React Query guncel veriyi yeniden ceker.",
+            body: "Yeni kullanıcı oluşturulduğunda liste cache'ini invalidate etmek yeterlidir. Böylece listeyi elle set etmeye gerek kalmadan React Query güncel veriyi yeniden çeker.",
             code: {
               language: "tsx",
               filename: "features/users/useCreateUser.ts",
@@ -216,10 +216,8 @@ export const useCreateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: CreateUserInput) => {
-      const { data } = await api.post<User>("/users", input);
-      return data;
-    },
+    mutationFn: (input: CreateUserInput) =>
+      api.post<User>("/users", input).then(({ data }) => data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
     },
@@ -229,7 +227,7 @@ export const useCreateUser = () => {
           },
           {
             title: "Update User Mutation",
-            body: "Update mutation'i id ve input alir. Basarili olunca hem detay cache'ini hem liste cache'ini invalidate ederek ekranda eski veri kalmasini engellersiniz.",
+            body: "Update mutation'ı id ve input alır. Başarılı olunca hem detay cache'ini hem liste cache'ini invalidate ederek ekranda eski veri kalmasını engellersiniz.",
             code: {
               language: "tsx",
               filename: "features/users/useUpdateUser.ts",
@@ -247,10 +245,8 @@ export const useUpdateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, input }: UpdateUserVariables) => {
-      const { data } = await api.patch<User>("/users/" + id, input);
-      return data;
-    },
+    mutationFn: ({ id, input }: UpdateUserVariables) =>
+      api.patch<User>("/users/" + id, input).then(({ data }) => data),
     onSuccess: (user) => {
       queryClient.invalidateQueries({ queryKey: userKeys.detail(user.id) });
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
@@ -260,8 +256,8 @@ export const useUpdateUser = () => {
             },
           },
           {
-            title: "Formlarda Kullanimi",
-            body: "Basit buton veya tek aksiyonlarda mutate yeterlidir. Submit akisi icinde sonuc beklemek, sayfa yonlendirmek veya toast gostermek istiyorsaniz mutateAsync kullanin.",
+            title: "Formlarda Kullanımı",
+            body: "Basit buton veya tek aksiyonlarda mutate yeterlidir. Submit akışı içinde sonuç beklemek, sayfa yönlendirmek veya toast göstermek istiyorsanız mutateAsync'i .then/.catch ile kullanın.",
             code: {
               language: "tsx",
               filename: "components/UserActions.tsx",
@@ -274,52 +270,56 @@ createUser.mutate({
   role: "editor",
 });
 
-await updateUser.mutateAsync({
-  id: "user_123",
-  input: { role: "admin" },
-});`,
+updateUser
+  .mutateAsync({
+    id: "user_123",
+    input: { role: "admin" },
+  })
+  .then((user) => {
+    console.log("Güncellendi", user.name);
+  });`,
             },
           },
           {
             title: "v5 Durum Flag'leri",
-            body: "TanStack Query v5'te ilk bekleme durumu icin isPending kullanin. isFetching aktif fetch'i, isError hata durumunu, mutation.isPending ise yazma isleminin devam ettigini anlatir.",
+            body: "TanStack Query v5'te ilk bekleme durumu için isPending kullanın. isFetching aktif fetch'i, isError hata durumunu, mutation.isPending ise yazma işleminin devam ettiğini anlatır.",
             bullets: [
-              "query.isPending — data henuz hazir degil",
-              "query.isFetching — ilk yukleme veya arka plan refetch aktif",
-              "mutation.isPending — POST/PATCH/DELETE islemi devam ediyor",
-              "mutation.isError — mutation hata ile sonuclandi",
+              "query.isPending — data henüz hazır değil",
+              "query.isFetching — ilk yükleme veya arka plan refetch aktif",
+              "mutation.isPending — POST/PATCH/DELETE işlemi devam ediyor",
+              "mutation.isError — mutation hata ile sonuçlandı",
             ],
           },
           {
-            title: "Ozet",
-            body: "React Query'yi gercek projede okunakli yapan sey, HTTP katmanini Axios instance'a; server state islerini ise kucuk custom hook'lara ayirmaktir. Login, create user ve update user gibi mutation'lar bu yapida net, tipli ve tekrar kullanilabilir kalir.",
+            title: "Özet",
+            body: "React Query'yi gerçek projede okunaklı yapan şey, HTTP katmanını Axios instance'a; server state işlerini ise küçük custom hook'lara ayırmaktır. Login, create user ve update user gibi mutation'lar bu yapıda net, tipli ve tekrar kullanılabilir kalır.",
           },
         ],
         faq: [
           {
-            question: "Login icin useQuery mi useMutation mi?",
+            question: "Login için useQuery mi useMutation mi?",
             answer:
-              "useMutation. Login server'da yeni bir oturum/token ureten yazma islemidir; cache'lenebilir bir okuma sorgusu gibi dusunulmemelidir.",
+              "useMutation. Login server'da yeni bir oturum/token üreten yazma işlemidir; cache'lenebilir bir okuma sorgusu gibi düşünülmemelidir.",
           },
           {
-            question: "mutate mi mutateAsync mi kullanmaliyim?",
+            question: "mutate mi mutateAsync mi kullanmalıyım?",
             answer:
-              "Basit button click icin mutate yeterlidir. Form submit icinde await, try/catch, redirect veya toast siralamasi gerekiyorsa mutateAsync daha uygundur.",
+              "Basit buton tıklaması için mutate yeterlidir. Form submit içinde sonuç bekleme, .then/.catch, redirect veya toast sıralaması gerekiyorsa mutateAsync daha uygundur.",
           },
           {
-            question: "Token'i nerede saklamaliyim?",
+            question: "Token'ı nerede saklamalıyım?",
             answer:
-              "Ornek sadelik icin localStorage kullaniyor. Daha guvenli uygulamalarda httpOnly cookie tercih edilir; bu durumda Axios instance withCredentials ile ayarlanabilir.",
+              "Örnek sadelik için localStorage kullanıyor. Daha güvenli uygulamalarda httpOnly cookie tercih edilir; bu durumda Axios instance withCredentials ile ayarlanabilir.",
           },
           {
-            question: "Create/update sonrasi neden invalidateQueries var?",
+            question: "Create/update sonrası neden invalidateQueries var?",
             answer:
-              "Mutation server'daki veriyi degistirir. invalidateQueries ilgili cache'i stale isaretler ve React Query'nin guncel veriyi yeniden cekmesini saglar.",
+              "Mutation server'daki veriyi değiştirir. invalidateQueries ilgili cache'i stale işaretler ve React Query'nin güncel veriyi yeniden çekmesini sağlar.",
           },
           {
-            question: "TanStack Query ile React Query ayni sey mi?",
+            question: "TanStack Query ile React Query aynı şey mi?",
             answer:
-              "Evet. React Query, TanStack Query ailesine tasindi. React paketi @tanstack/react-query olarak kullanilir.",
+              "Evet. React Query, TanStack Query ailesine taşındı. React paketi @tanstack/react-query olarak kullanılır.",
           },
         ],
       },
@@ -454,10 +454,8 @@ import type { LoginInput, LoginResponse } from "@/features/users/types";
 
 export const useLogin = () => {
   return useMutation({
-    mutationFn: async (input: LoginInput) => {
-      const { data } = await api.post<LoginResponse>("/auth/login", input);
-      return data;
-    },
+    mutationFn: (input: LoginInput) =>
+      api.post<LoginResponse>("/auth/login", input).then(({ data }) => data),
     onSuccess: (data) => {
       setAuthToken(data.accessToken);
       localStorage.setItem("accessToken", data.accessToken);
@@ -468,7 +466,7 @@ export const useLogin = () => {
           },
           {
             title: "mutateAsync in a Login Form",
-            body: "Use mutateAsync when the submit flow needs to await a result. It works nicely with try/catch, redirects and toast messages.",
+            body: "Use mutateAsync with .then/.catch when the submit flow needs to wait for a result. It keeps success redirects, toast messages and error handling in one promise chain.",
             code: {
               language: "tsx",
               filename: "components/LoginForm.tsx",
@@ -481,14 +479,16 @@ export function LoginForm() {
   const router = useRouter();
   const login = useLogin();
 
-  async function onSubmit(input: { email: string; password: string }) {
-    try {
-      const session = await login.mutateAsync(input);
-      router.push("/dashboard");
-      console.log("Welcome", session.user.name);
-    } catch {
-      console.log("Invalid email or password");
-    }
+  function onSubmit(input: { email: string; password: string }) {
+    login
+      .mutateAsync(input)
+      .then((session) => {
+        router.push("/dashboard");
+        console.log("Welcome", session.user.name);
+      })
+      .catch(() => {
+        console.log("Invalid email or password");
+      });
   }
 
   return (
@@ -530,10 +530,8 @@ export const useCreateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: CreateUserInput) => {
-      const { data } = await api.post<User>("/users", input);
-      return data;
-    },
+    mutationFn: (input: CreateUserInput) =>
+      api.post<User>("/users", input).then(({ data }) => data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
     },
@@ -561,10 +559,8 @@ export const useUpdateUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, input }: UpdateUserVariables) => {
-      const { data } = await api.patch<User>("/users/" + id, input);
-      return data;
-    },
+    mutationFn: ({ id, input }: UpdateUserVariables) =>
+      api.patch<User>("/users/" + id, input).then(({ data }) => data),
     onSuccess: (user) => {
       queryClient.invalidateQueries({ queryKey: userKeys.detail(user.id) });
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
@@ -575,7 +571,7 @@ export const useUpdateUser = () => {
           },
           {
             title: "Using Them in Forms",
-            body: "For simple button actions, mutate is enough. For submit flows that need awaits, redirects or toast sequencing, use mutateAsync.",
+            body: "For simple button actions, mutate is enough. For submit flows that need a result, redirects or toast sequencing, use mutateAsync with .then/.catch.",
             code: {
               language: "tsx",
               filename: "components/UserActions.tsx",
@@ -588,10 +584,14 @@ createUser.mutate({
   role: "editor",
 });
 
-await updateUser.mutateAsync({
-  id: "user_123",
-  input: { role: "admin" },
-});`,
+updateUser
+  .mutateAsync({
+    id: "user_123",
+    input: { role: "admin" },
+  })
+  .then((user) => {
+    console.log("Updated", user.name);
+  });`,
             },
           },
           {
@@ -618,7 +618,7 @@ await updateUser.mutateAsync({
           {
             question: "Should I use mutate or mutateAsync?",
             answer:
-              "Use mutate for simple button clicks. Use mutateAsync when a submit flow needs await, try/catch, redirects or toast sequencing.",
+              "Use mutate for simple button clicks. Use mutateAsync when a submit flow needs a result, .then/.catch handling, redirects or toast sequencing.",
           },
           {
             question: "Where should I store the token?",
